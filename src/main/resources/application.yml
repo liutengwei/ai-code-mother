@@ -36,3 +36,13 @@ knife4j:
 mybatis-flex:
   global-config:
     print-banner: false
+
+#  langchain4j.open-ai.chat-model.api-key=${OPENAI_API_KEY}
+#  langchain4j.open-ai.chat-model.model-name=gpt-4o
+#  langchain4j.open-ai.chat-model.log-requests=true
+# 注释掉自动配置，使用 DeepSeekConfig 中的手动配置避免冲突
+# langchain4j:
+#   open-ai:
+#     chat-model:
+#       api-key: "e0f6ba72b57a4621b9bb2f7beac6c607"
+#       model-name: "deepseek-chat"

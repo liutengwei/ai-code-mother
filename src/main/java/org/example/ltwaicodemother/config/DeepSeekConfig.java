@@ -4,6 +4,7 @@ import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class DeepSeekConfig {
@@ -18,11 +19,14 @@ public class DeepSeekConfig {
     private String model;
 
     @Bean
+    @Primary
     public ChatModel deepSeekModel() {
+
         return OpenAiChatModel.builder()
                 .apiKey(apiKey)
                 .baseUrl(baseUrl)   // DeepSeek API 地址
                 .modelName(model)
                 .build();
     }
+
 }

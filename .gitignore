@@ -34,3 +34,4 @@ build/
 
 ### VS Code ###
 .vscode/
+/src/test/java/org/example/ltwaicodemother/ai/AiCodeGeneratorServiceTest.java
