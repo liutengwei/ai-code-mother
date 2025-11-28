@@ -1,5 +1,6 @@
 package org.example.ltwaicodemother.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.mybatisflex.core.query.QueryWrapper;
@@ -11,10 +12,10 @@ import org.example.ltwaicodemother.mapper.UserMapper;
 import org.example.ltwaicodemother.model.entity.User;
 import org.example.ltwaicodemother.model.enums.UserRoleEnum;
 import org.example.ltwaicodemother.model.vo.LoginUserVO;
+import org.example.ltwaicodemother.model.vo.UserVO;
 import org.example.ltwaicodemother.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import org.yaml.snakeyaml.tokens.ScalarToken;
 
 import static org.example.ltwaicodemother.constant.UserConstant.USER_LOGIN_STATE;
 
@@ -126,5 +127,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
         }
 
         return currentUser;
+    }
+
+    @Override
+    public UserVO getUserVO(User user) {
+        if (user == null) {
+            return null;
+        }
+        UserVO userVO = new UserVO();
+        BeanUtil.copyProperties(user, userVO);
+        return userVO;
     }
 }

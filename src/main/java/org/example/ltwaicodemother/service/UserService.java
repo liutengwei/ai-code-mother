@@ -4,6 +4,7 @@ import com.mybatisflex.core.service.IService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.ltwaicodemother.model.entity.User;
 import org.example.ltwaicodemother.model.vo.LoginUserVO;
+import org.example.ltwaicodemother.model.vo.UserVO;
 
 /**
  *  服务层。
@@ -22,4 +23,7 @@ public interface UserService extends IService<User> {
     LoginUserVO getLoginUserVO(User loginUser);
 
     boolean userLogout(HttpServletRequest request);
+
+    UserVO getUserVO(User user);
+
 }
