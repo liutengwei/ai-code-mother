@@ -7,6 +7,7 @@ import org.example.ltwaicodemother.model.dto.app.AppQueryRequest;
 import org.example.ltwaicodemother.model.entity.App;
 import org.example.ltwaicodemother.model.entity.User;
 import org.example.ltwaicodemother.model.vo.AppVO;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -26,4 +27,12 @@ public interface AppService extends IService<App> {
     QueryWrapper getQueryWrapper(AppQueryRequest appQueryRequest);
 
     List<AppVO> getAppVOList(List<App> records);
+
+    /**
+     * 聊天生成代码
+     * @param appId
+     * @param prompt
+     * @return
+     */
+    Flux<String> chatToGenCode(Long appId, String prompt,User loginUser);
 }

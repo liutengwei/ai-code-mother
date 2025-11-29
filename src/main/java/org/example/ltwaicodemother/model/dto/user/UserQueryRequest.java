@@ -1,4 +1,4 @@
-package org.example.ltwaicodemother.model.dto;
+package org.example.ltwaicodemother.model.dto.user;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

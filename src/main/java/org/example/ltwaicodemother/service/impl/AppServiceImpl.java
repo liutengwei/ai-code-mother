@@ -7,6 +7,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 
 import jakarta.annotation.Resource;
+import org.example.ltwaicodemother.core.AiCodeGeneratorFacade;
 import org.example.ltwaicodemother.exception.BusinessException;
 import org.example.ltwaicodemother.exception.ErrorCode;
 import org.example.ltwaicodemother.exception.ThrowUtils;
@@ -17,11 +18,11 @@ import org.example.ltwaicodemother.model.entity.App;
 import org.example.ltwaicodemother.model.entity.User;
 import org.example.ltwaicodemother.model.enums.CodeGenTypeEnum;
 import org.example.ltwaicodemother.model.vo.AppVO;
-import org.example.ltwaicodemother.model.vo.LoginUserVO;
 import org.example.ltwaicodemother.model.vo.UserVO;
 import org.example.ltwaicodemother.service.AppService;
 import org.example.ltwaicodemother.service.UserService;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,6 +37,11 @@ import java.util.stream.Collectors;
 public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppService {
     @Resource
     private UserService userService;
+    @Resource
+    private AppService appService;
+    @Resource
+    private AiCodeGeneratorFacade aiCodeGeneratorFacade;
+
 
     public AppServiceImpl() {
     }
@@ -116,5 +122,34 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
             appVO.setUser(userVO);
             return appVO;
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * 和模型沟通交流
+     * @param appId
+     * @param userMessage
+     * @param loginUser
+     * @return
+     */
+    @Override
+    public Flux<String> chatToGenCode(Long appId, String userMessage, User loginUser) {
+        // 参数校验
+        ThrowUtils.throwIf(appId==null || appId<=0,ErrorCode.PARAMS_ERROR,"appId 不能为空");
+        ThrowUtils.throwIf(StrUtil.isBlank(userMessage),ErrorCode.PARAMS_ERROR,"提示词不能为空");
+
+        App app = appService.getById(appId);
+        ThrowUtils.throwIf(app==null, ErrorCode.NOT_FOUND_ERROR,"应用不存在");
+
+        // 用户只能查询自己的app
+        ThrowUtils.throwIf(app.getUserId().equals(loginUser.getId()),ErrorCode.NO_AUTH_ERROR,"无权限访问该应用");
+
+        // 获取应用类型
+        String codeGenType = app.getCodeGenType();
+        CodeGenTypeEnum enumByValue = CodeGenTypeEnum.getEnumByValue(codeGenType);
+        ThrowUtils.throwIf(enumByValue==null,ErrorCode.NOT_FOUND_ERROR,"应用类型不存在");
+
+        // 调用 AI 生成代码（流式）
+        return aiCodeGeneratorFacade.generateAndSaveCodeStream(userMessage, enumByValue, appId);
+
     }
 }

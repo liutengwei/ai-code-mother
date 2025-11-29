@@ -5,7 +5,7 @@ import lombok.Data;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-
+// todo 为什么区分loginUserVo和userVO
 /**
  * 脱敏后的用户信息
  */
