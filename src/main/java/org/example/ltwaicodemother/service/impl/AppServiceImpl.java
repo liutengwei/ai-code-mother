@@ -2,11 +2,15 @@ package org.example.ltwaicodemother.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.IORuntimeException;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 
 import jakarta.annotation.Resource;
+import org.example.ltwaicodemother.constant.AppConstant;
 import org.example.ltwaicodemother.core.AiCodeGeneratorFacade;
 import org.example.ltwaicodemother.exception.BusinessException;
 import org.example.ltwaicodemother.exception.ErrorCode;
@@ -24,6 +28,8 @@ import org.example.ltwaicodemother.service.UserService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
+import java.io.File;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -151,5 +157,44 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         // 调用 AI 生成代码（流式）
         return aiCodeGeneratorFacade.generateAndSaveCodeStream(userMessage, enumByValue, appId);
 
+    }
+
+    @Override
+    public String deployApp(Long appId, User loginUser) {
+        // 参数校验
+        ThrowUtils.throwIf(appId==null || appId<=0,ErrorCode.PARAMS_ERROR,"应用 ID 错误");
+        App app = this.getById(appId);
+        ThrowUtils.throwIf(app==null,ErrorCode.NOT_FOUND_ERROR,"应用不存在");
+        ThrowUtils.throwIf(!Objects.equals(app.getUserId(), loginUser.getId()), ErrorCode.NO_AUTH_ERROR, "无权限访问该应用");
+
+        // 检查是否已经有 deployKey
+        String deployKey = app.getDeployKey();
+        if(StrUtil.isBlank(deployKey)){
+            deployKey = RandomUtil.randomString(6);
+        }
+        // 获取代码生成类型，获取原始代码生辰路径（应用访问目录）
+        String codeGenType = app.getCodeGenType();
+        String sourceDirName = codeGenType + "_" + appId;
+        String sourceDirPath= AppConstant.CODE_OUTPUT_ROOT_DIR+ File.separator+sourceDirName;
+        File sourceFile = new File(sourceDirPath);
+        if(!sourceFile.exists() || !sourceFile.isDirectory()){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"应用代码路径不存在，请先生成应用");
+        }
+        // 复制文件到部署目录
+        String deployDirPath = AppConstant.CODE_DEPLOY_HOST + File.separator + deployKey;
+        try {
+            FileUtil.copyContent(sourceFile, new File(deployDirPath),true);
+        } catch (IORuntimeException e) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"应用部署失败："+e.getMessage());
+        }
+        // 更新数据库
+        App updateApp =new App();
+        updateApp.setId(appId);
+        updateApp.setDeployKey(deployKey);
+        updateApp.setDeployedTime(LocalDateTime.now());
+        boolean updateResult = this.updateById(updateApp);
+        ThrowUtils.throwIf(!updateResult,ErrorCode.SYSTEM_ERROR,"应用部署更新失败");
+        // 返回 URL 地址
+        return deployDirPath;
     }
 }
