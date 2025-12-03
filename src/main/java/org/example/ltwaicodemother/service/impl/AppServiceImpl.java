@@ -24,11 +24,12 @@ import org.example.ltwaicodemother.model.enums.CodeGenTypeEnum;
 import org.example.ltwaicodemother.model.vo.AppVO;
 import org.example.ltwaicodemother.model.vo.UserVO;
 import org.example.ltwaicodemother.service.AppService;
+import org.example.ltwaicodemother.service.ChatHistoryService;
 import org.example.ltwaicodemother.service.UserService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
-
 import java.io.File;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -47,7 +48,8 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
     private AppService appService;
     @Resource
     private AiCodeGeneratorFacade aiCodeGeneratorFacade;
-
+    @Resource
+    private ChatHistoryService chatHistoryService;
 
     public AppServiceImpl() {
     }
@@ -196,5 +198,19 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         ThrowUtils.throwIf(!updateResult,ErrorCode.SYSTEM_ERROR,"应用部署更新失败");
         // 返回 URL 地址
         return deployDirPath;
+    }
+
+    @Override
+    public boolean removeById(Serializable id){
+        if(id==null){
+            return false;
+        }
+        long appId=Long.parseLong(id.toString());
+        if(appId<=0) return false;
+        try{
+            chatHistoryService.deleteById(appId);
+        }catch(Exception e){
+            throw new BusinessException();
+        }
     }
 }

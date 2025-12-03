@@ -8,7 +8,6 @@ import org.example.ltwaicodemother.model.entity.App;
 import org.example.ltwaicodemother.model.entity.User;
 import org.example.ltwaicodemother.model.vo.AppVO;
 import reactor.core.publisher.Flux;
-
 import java.util.List;
 
 public interface AppService extends IService<App> {

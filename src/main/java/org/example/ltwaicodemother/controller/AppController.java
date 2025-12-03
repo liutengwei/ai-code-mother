@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.ltwaicodemother.common.BaseResponse;
 import org.example.ltwaicodemother.common.ResultUtils;
@@ -15,8 +16,10 @@ import org.example.ltwaicodemother.model.dto.app.AppQueryRequest;
 import org.example.ltwaicodemother.model.dto.app.AppUpdateRequest;
 import org.example.ltwaicodemother.model.entity.App;
 import org.example.ltwaicodemother.model.entity.User;
+import org.example.ltwaicodemother.model.enums.ChatHistoryMessageTypeEnum;
 import org.example.ltwaicodemother.model.vo.AppVO;
 import org.example.ltwaicodemother.service.AppService;
+import org.example.ltwaicodemother.service.ChatHistoryService;
 import org.example.ltwaicodemother.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -43,6 +46,8 @@ public class AppController {
     private AppService appService;
     @Autowired
     private UserService userService;
+    @Resource
+    private ChatHistoryService chatHistoryService;
 
     @GetMapping(value = "/chat/gen/code",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<String>> chatToGenCode(@RequestParam Long appId,
