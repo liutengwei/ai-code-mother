@@ -210,7 +210,8 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         try{
             chatHistoryService.deleteById(appId);
         }catch(Exception e){
-            throw new BusinessException();
+            throw new BusinessException(ErrorCode.OPERATION_ERROR,"删除应用失败");
         }
+        return true;
     }
 }
