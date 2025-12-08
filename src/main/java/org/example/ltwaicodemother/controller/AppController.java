@@ -16,7 +16,6 @@ import org.example.ltwaicodemother.model.dto.app.AppQueryRequest;
 import org.example.ltwaicodemother.model.dto.app.AppUpdateRequest;
 import org.example.ltwaicodemother.model.entity.App;
 import org.example.ltwaicodemother.model.entity.User;
-import org.example.ltwaicodemother.model.enums.ChatHistoryMessageTypeEnum;
 import org.example.ltwaicodemother.model.vo.AppVO;
 import org.example.ltwaicodemother.service.AppService;
 import org.example.ltwaicodemother.service.ChatHistoryService;

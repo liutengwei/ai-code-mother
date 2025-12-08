@@ -26,12 +26,25 @@ public class AiCodeGeneratorServiceFactory {
 
     @Resource(name = "deepSeekModel")
     private ChatModel chatModel;
-//    @Resource(name = "deepSeekStreamingChatModel")
-//    private StreamingChatModel streamingChatModel;
+    @Resource(name = "deepSeekStreamingChatModel")
+    private StreamingChatModel streamingChatModel;
     @Autowired(required = false)
     private RedisChatMemoryStore redisChatMemoryStore;
 
-
+    /**
+     * AI 服务实例缓存
+     * - 最大缓存 1000 个实例
+     * - 写入 30 分钟后过期
+     * - 写入 10 分钟后过期
+     */
+    private final Cache<Long, AiCodeGeneratorService> serviceCache = Caffeine.newBuilder()
+            .maximumSize(1000)
+            .expireAfterWrite(Duration.ofMinutes(30))
+            .refreshAfterWrite(Duration.ofMinutes(10))
+            .removalListener((key,value,cause)->{
+                log.debug("AI 服务实例被移除：appId{} ，原因：{}",key,cause);
+            })
+            .build();
     /**
      * AI 服务实例缓存
      * 缓存策略：
@@ -50,8 +63,11 @@ public class AiCodeGeneratorServiceFactory {
 
     @Bean
     public AiCodeGeneratorService aiCodeGeneratorService() {
-//        return AiServices.builder(AiCodeGeneratorService.class).chatModel(chatModel).streamingChatModel(streamingChatModel).build();
-        return null;
+        return AiServices.builder(AiCodeGeneratorService.class)
+                .chatModel(chatModel)
+                .streamingChatModel(streamingChatModel)
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.builder().id(memoryId).chatMemoryStore(redisChatMemoryStore).maxMessages(20).build())
+                .build();
     }
 
 //    private AiCodeGeneratorService createAiCodeGeneratorService(long appId, CodeGenTypeEnum codeGenType) {

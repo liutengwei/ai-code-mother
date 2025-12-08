@@ -12,11 +12,13 @@ public interface AiCodeGeneratorService {
 
     /**
      * 生成 HTML 代码
+     *
+     * @param memoryId
      * @param userMessage
      * @return
      */
     @SystemMessage(fromResource = "prompt/codegen-html-system-prompt.txt")
-    HtmlCodeResult generateHtmlCode(String userMessage);
+    HtmlCodeResult generateHtmlCode(@MemoryId int memoryId,@UserMessage String userMessage);
 
     /**
      * 生成多文件代码

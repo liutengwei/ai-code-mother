@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
+import dev.langchain4j.memory.ChatMemory;
 import jakarta.annotation.Resource;
 import org.example.ltwaicodemother.constant.UserConstant;
 import org.example.ltwaicodemother.exception.BusinessException;
@@ -116,5 +117,13 @@ public class ChatHistoryServiceImpl extends ServiceImpl<ChatHistoryMapper, ChatH
             queryWrapper.orderBy("createTime",false);
         }
         return queryWrapper;
+    }
+
+    public boolean loadChatHistoryToMemory(Long appId, ChatMemory chatMemory,int max){
+
+
+
+        return false;
+
     }
 }

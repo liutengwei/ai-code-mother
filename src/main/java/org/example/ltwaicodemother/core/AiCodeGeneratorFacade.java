@@ -1,9 +1,5 @@
 package org.example.ltwaicodemother.core;
 
-import cn.hutool.json.JSONUtil;
-import dev.langchain4j.model.chat.response.ChatResponse;
-import dev.langchain4j.service.TokenStream;
-import dev.langchain4j.service.tool.ToolExecution;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.example.ltwaicodemother.ai.AiCodeGeneratorService;
@@ -51,7 +47,7 @@ public class AiCodeGeneratorFacade {
         AiCodeGeneratorService aiCodeGeneratorService = aiCodeGeneratorServiceFactory.getAiCodeGeneratorService(appId, codeGenTypeEnum);
         return switch (codeGenTypeEnum) {
             case HTML -> {
-                HtmlCodeResult result = aiCodeGeneratorService.generateHtmlCode(userMessage);
+                HtmlCodeResult result = aiCodeGeneratorService.generateHtmlCode(1, userMessage);
                 yield CodeFileSaverExecutor.executeSaver(result, HTML, appId);
             }
             case MULTI_FILE -> {
