@@ -1,11 +1,16 @@
 package org.example.ltwaicodemother.core;
 
+import cn.hutool.json.JSONUtil;
+import dev.langchain4j.model.chat.response.ChatResponse;
+import dev.langchain4j.service.TokenStream;
+import dev.langchain4j.service.tool.ToolExecution;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.example.ltwaicodemother.ai.AiCodeGeneratorService;
 import org.example.ltwaicodemother.ai.AiCodeGeneratorServiceFactory;
-import org.example.ltwaicodemother.ai.model.HtmlCodeResult;
-import org.example.ltwaicodemother.ai.model.MultiFileCodeResult;
+import org.example.ltwaicodemother.ai.model.*;
+import org.example.ltwaicodemother.constant.AppConstant;
+import org.example.ltwaicodemother.core.builder.VueProjectBuilder;
 import org.example.ltwaicodemother.core.parser.CodeParserExecutor;
 import org.example.ltwaicodemother.core.saver.CodeFileSaverExecutor;
 import org.example.ltwaicodemother.exception.BusinessException;
@@ -26,9 +31,9 @@ public class AiCodeGeneratorFacade {
 
     @Resource
     private AiCodeGeneratorServiceFactory aiCodeGeneratorServiceFactory;
-//
-//    @Resource
-//    private VueProjectBuilder vueProjectBuilder;
+
+    @Resource
+    private VueProjectBuilder vueProjectBuilder;
 
     /**
      * 统一入口：根据类型生成并保存代码
@@ -53,6 +58,9 @@ public class AiCodeGeneratorFacade {
             case MULTI_FILE -> {
                 MultiFileCodeResult result = aiCodeGeneratorService.generateMultiFileCode(userMessage);
                 yield CodeFileSaverExecutor.executeSaver(result, CodeGenTypeEnum.MULTI_FILE, appId);
+            }
+            case VUE_PROJECT -> {
+                Flux<String> codeStream = aiCodeGeneratorService.generateVueProjectCodeStream(appId, userMessage);
             }
             default -> {
                 String errorMessage = "不支持的生成类型：" + codeGenTypeEnum.getValue();
@@ -84,10 +92,10 @@ public class AiCodeGeneratorFacade {
                 Flux<String> codeStream = aiCodeGeneratorService.generateMultiFileCodeStream(userMessage);
                 yield processCodeStream(codeStream, CodeGenTypeEnum.MULTI_FILE, appId);
             }
-//            case VUE_PROJECT -> {
-//                TokenStream tokenStream = aiCodeGeneratorService.generateVueProjectCodeStream(appId, userMessage);
-//                yield processTokenStream(tokenStream, appId);
-//            }
+            case VUE_PROJECT -> {
+                TokenStream tokenStream = aiCodeGeneratorService.generateVueProjectCodeStream(appId, userMessage);
+                yield processTokenStream(tokenStream, appId);
+            }
             default -> {
                 String errorMessage = "不支持的生成类型：" + codeGenTypeEnum.getValue();
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, errorMessage);
@@ -95,40 +103,38 @@ public class AiCodeGeneratorFacade {
         };
     }
 
-//    /**
-//     * 将 TokenStream 转换为 Flux<String>，并传递工具调用信息
-//     *
-//     * @param tokenStream TokenStream 对象
-//     * @param appId       应用 ID
-//     * @return Flux<String> 流式响应
-//     */
-//    private Flux<String> processTokenStream(TokenStream tokenStream, Long appId) {
-//        return Flux.create(sink -> {
-//            tokenStream.onPartialResponse((String partialResponse) -> {
-//                        AiResponseMessage aiResponseMessage = new AiResponseMessage(partialResponse);
-//                        sink.next(JSONUtil.toJsonStr(aiResponseMessage));
-//                    })
-//                    .onPartialToolExecutionRequest((index, toolExecutionRequest) -> {
-//                        ToolRequestMessage toolRequestMessage = new ToolRequestMessage(toolExecutionRequest);
-//                        sink.next(JSONUtil.toJsonStr(toolRequestMessage));
-//                    })
-//                    .onToolExecuted((ToolExecution toolExecution) -> {
-//                        ToolExecutedMessage toolExecutedMessage = new ToolExecutedMessage(toolExecution);
-//                        sink.next(JSONUtil.toJsonStr(toolExecutedMessage));
-//                    })
-//                    .onCompleteResponse((ChatResponse response) -> {
-//                        // 执行 Vue 项目构建（同步执行，确保预览时项目已就绪）
-//                        String projectPath = AppConstant.CODE_OUTPUT_ROOT_DIR + "/vue_project_" + appId;
-//                        vueProjectBuilder.buildProject(projectPath);
-//                        sink.complete();
-//                    })
-//                    .onError((Throwable error) -> {
-//                        error.printStackTrace();
-//                        sink.error(error);
-//                    })
-//                    .start();
-//        });
-//    }
+    /**
+     * 将 TokenStream 转换为 Flux<String>，并传递工具调用信息
+     *
+     * @param tokenStream TokenStream 对象
+     * @param appId       应用 ID
+     * @return Flux<String> 流式响应
+     */
+    private Flux<String> processTokenStream(TokenStream tokenStream,Long appId){
+        return Flux.create(sink -> {
+            tokenStream.onPartialResponse((String partialResponse)->{
+                            AiResponseMessage aiResponseMessage = new AiResponseMessage(partialResponse);
+                            sink.next(JSONUtil.toJsonStr(aiResponseMessage));
+                    })
+                        .onPartialToolExecutionRequest((index,toolExecutionRequest)->{
+                            ToolRequestMessage toolRequestMessage=new ToolRequestMessage(toolExecutionRequest);
+                            sink.next(JSONUtil.toJsonStr(toolRequestMessage));
+                        })
+                        .onToolExecuted((ToolExecution toolExecution)->{
+                            ToolExecutedMessage toolExecutedMessage=new ToolExecutedMessage(toolExecution);
+                            sink.next(JSONUtil.toJsonStr(toolExecutedMessage));
+                        }).onCompleteResponse((ChatResponse chatResponse)->{
+                            String projectPath= AppConstant.CODE_OUTPUT_ROOT_DIR+"vue_project_"+appId;
+                            vueProjectBuilder.buildProject(projectPath);
+                            sink.complete();
+                    })
+                    .onError((Throwable error)->{
+                        error.printStackTrace();
+                        sink.error(error);
+                    })
+                    .start();
+        });
+    }
 
     /**
      * 通用流式代码处理方法
