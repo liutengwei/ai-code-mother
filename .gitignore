@@ -38,3 +38,5 @@ build/
 /src/test/java/org/example/ltwaicodemother/ai/AiCodeGeneratorServiceTest.java
 
 sql/
+
+/tmp
