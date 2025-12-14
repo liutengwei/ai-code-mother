@@ -39,4 +39,4 @@ build/
 
 sql/
 
-/tmp
+tmp/
