@@ -6,7 +6,7 @@ import org.example.ltwaicodemother.exception.ErrorCode;
 /**
  * 快速构造响应结果的工具类
  */
-public class ResultUtils {
+public class  ResultUtils {
 
     /**
      * 成功

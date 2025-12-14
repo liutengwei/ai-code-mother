@@ -15,6 +15,5 @@ public class TmpTest {
     public void test() {
         Set<Integer> set = new HashSet<>();
         set.add(1);
-        set.
-    }
+       }
 }

@@ -1,4 +1,0 @@
-deepseek:
-  api-key: "sk-e0f6ba72b57a4621b9bb2f7beac6c607"     # 替换成你的 key
-  base-url: "https://api.deepseek.com"
-  model: "deepseek-chat"      # 或 deepseek-coder
