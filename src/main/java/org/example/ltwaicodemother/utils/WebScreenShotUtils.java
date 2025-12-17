@@ -41,12 +41,12 @@ public class WebScreenShotUtils {
     static final int DEFAULT_WIDTH = 1200;
 
     static final int DEFAULT_HEIGHT = 800;
-//
-//    private static final WebDriver webDriver ;
-//
-//    static{
-//        webDriver=initChromeDriver();
-//    }
+
+    private static final WebDriver webDriver ;
+
+    static{
+        webDriver=initChromeDriver();
+    }
 
     /**
      * 生成网页截图

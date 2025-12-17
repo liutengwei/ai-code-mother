@@ -25,6 +25,7 @@ import org.example.ltwaicodemother.model.vo.AppVO;
 import org.example.ltwaicodemother.model.vo.UserVO;
 import org.example.ltwaicodemother.service.AppService;
 import org.example.ltwaicodemother.service.ChatHistoryService;
+import org.example.ltwaicodemother.service.ScreenShotService;
 import org.example.ltwaicodemother.service.UserService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -50,6 +51,8 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
     private AiCodeGeneratorFacade aiCodeGeneratorFacade;
     @Resource
     private ChatHistoryService chatHistoryService;
+    @Resource
+    private ScreenShotService screenShotService;
 
     public AppServiceImpl() {
     }
@@ -196,8 +199,30 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         updateApp.setDeployedTime(LocalDateTime.now());
         boolean updateResult = this.updateById(updateApp);
         ThrowUtils.throwIf(!updateResult,ErrorCode.SYSTEM_ERROR,"应用部署更新失败");
+        // 异步生成截图并且更新应用封面
+        String deployHost ="";
+        String appDeployUrl = String.format("%s/%s/", deployHost, deployKey);        // 11. 异步生成截图并且更新应用封面
+        generateAppScreenshotAsync(appId, appDeployUrl);
         // 返回 URL 地址
         return deployDirPath;
+    }
+
+    /**
+     * 异步生成应用截图并更新应用封面
+     * @param appId 应用Id
+     * @param appDeployUrl 应用访问URL
+     */
+    private void generateAppScreenshotAsync(Long appId, String appDeployUrl) {
+        Thread.startVirtualThread(()->{
+            String uploadPath = screenShotService.generateAndUploadScreenShot(appDeployUrl);
+            App app=new App();
+            app.setId(appId);
+            app.setCover(uploadPath);
+            boolean b = this.updateById(app);
+            if(!b){
+                throw new BusinessException(ErrorCode.OPERATION_ERROR,"更新应用封面失败");
+            }
+        });
     }
 
     @Override
