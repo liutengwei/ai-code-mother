@@ -13,6 +13,8 @@ import jakarta.annotation.Resource;
 import org.example.ltwaicodemother.ai.tool.ToolManger;
 import org.example.ltwaicodemother.exception.BusinessException;
 import org.example.ltwaicodemother.exception.ErrorCode;
+import org.example.ltwaicodemother.service.ChatHistoryService;
+import org.example.ltwaicodemother.utils.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import lombok.extern.slf4j.Slf4j;
 import org.example.ltwaicodemother.model.enums.CodeGenTypeEnum;
@@ -38,6 +40,8 @@ public class AiCodeGeneratorServiceFactory {
     private RedisChatMemoryStore redisChatMemoryStore;
     @Resource
     private ToolManger toolManger;
+    @Resource
+    private ChatHistoryService chatHistoryService;
 
     /**
      * AI 服务实例缓存

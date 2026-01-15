@@ -25,6 +25,7 @@ import org.example.ltwaicodemother.service.ChatHistoryService;
 import org.example.ltwaicodemother.service.ProjectDownloadService;
 import org.example.ltwaicodemother.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.*;
@@ -215,5 +216,34 @@ public class AppController {
         // 7. 调用通用下载服务
         projectDownloadService.downloadProjectAsZip(sourceDirPath, downloadFileName, response);
     }
+
+    /**
+     * 分页获取精选应用列表
+     * @param appQueryRequest
+     * @return
+     */
+    @PostMapping("/good/list/page/vo")
+    public BaseResponse<Page<AppVO>> listGoodAppVOByPage(@RequestBody AppQueryRequest appQueryRequest) {
+        ThrowUtils.throwIf(appQueryRequest==null, ErrorCode.PARAMS_ERROR);
+        // 限制每页最多20个
+        long pageSize = appQueryRequest.getPageSize();
+        ThrowUtils.throwIf(pageSize>20, ErrorCode.PARAMS_ERROR,"每页最多查询 20 个应用");
+        long pageNum=appQueryRequest.getPageNum();
+        appQueryRequest.setPriority(AppConstant.GOOD_APP_PRIORITY);
+        QueryWrapper queryWrapper = appService.getQueryWrapper(appQueryRequest);
+        // 分页查询
+        Page<App> appPage = appService.page(Page.of(pageNum, pageSize), queryWrapper);
+        Page<AppVO> appVOPage = new Page<>(pageNum, pageSize, appPage.getTotalRow());
+        List<AppVO> appVOList = appService.getAppVOList(appPage.getRecords());
+        appVOPage.setRecords(appVOList);
+        return ResultUtils.success(appVOPage);
+    }
+//    @Cacheable(
+//            value = "good_app_page",
+//            key = "T(com.yupi.yuaicodemother.utils.CacheKeyUtils).generateKey(#appQueryRequest)",
+//            condition = "#appQueryRequest.pageNum <= 10"
+//    )
+
+
 
 }
