@@ -11,6 +11,7 @@
     <groupId>org.example</groupId>
     <artifactId>ltw-ai-code-mother</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
     <name>ltw-ai-code-mother</name>
     <description>ltw-ai-code-mother</description>
     <url/>
@@ -20,6 +21,10 @@
     <developers>
         <developer/>
     </developers>
+    <modules>
+        <module>ltw-ai-code-mother-microservice/ltw-ai-code-common</module>
+        <module>ltw-ai-code-mother-microservice/ltw-ai-code-app</module>
+    </modules>
     <scm>
         <connection/>
         <developerConnection/>
@@ -145,6 +150,15 @@
             <groupId>org.redisson</groupId>
             <artifactId>redisson</artifactId>
             <version>3.50.0</version>
+        </dependency>
+        <!-- 监控 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
     </dependencies>
 

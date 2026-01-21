@@ -23,6 +23,8 @@ import org.example.ltwaicodemother.model.entity.User;
 import org.example.ltwaicodemother.model.enums.CodeGenTypeEnum;
 import org.example.ltwaicodemother.model.vo.AppVO;
 import org.example.ltwaicodemother.model.vo.UserVO;
+import org.example.ltwaicodemother.monitor.MonitorContext;
+import org.example.ltwaicodemother.monitor.MonitorContextHolder;
 import org.example.ltwaicodemother.service.AppService;
 import org.example.ltwaicodemother.service.ChatHistoryService;
 import org.example.ltwaicodemother.service.ScreenShotService;
@@ -159,8 +161,15 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         CodeGenTypeEnum enumByValue = CodeGenTypeEnum.getEnumByValue(codeGenType);
         ThrowUtils.throwIf(enumByValue==null,ErrorCode.NOT_FOUND_ERROR,"应用类型不存在");
 
+        MonitorContext monitorContext=MonitorContext.builder().appId(appId.toString()).userId(loginUser.getId().toString()
+        ).build();
+        MonitorContextHolder.setContext(monitorContext);
+
+
         // 调用 AI 生成代码（流式）
-        return aiCodeGeneratorFacade.generateAndSaveCodeStream(userMessage, enumByValue, appId);
+        return aiCodeGeneratorFacade.generateAndSaveCodeStream(userMessage, enumByValue, appId).doFinally(singleType->{
+            MonitorContextHolder.clearContext();
+        });
 
     }
 
